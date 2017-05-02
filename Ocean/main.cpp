@@ -18,39 +18,70 @@
 // GL includes
 #include "Shader.h"
 #include "Camera.h"
+#include "ocean.h"
+
 
 // Function prototypes
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void Do_Movement();
-void fInitGL();
+inline void fInitGL(GLFWwindow* &window);
 
 GLuint screenWidth = 1920, screenHeight = 1080;
 // Camera
-Camera camera(glm::vec3(0.0f, 0.5f, 1.0f));
+Camera camera(glm::vec3(0.0f, 2.5f, 10.0f));
 bool keys[1024];
 GLfloat lastX = 400, lastY = 300;
 bool firstMouse = true;
 
 GLfloat deltaTime = 0.0f;
 GLfloat lastFrame = 0.0f;
-glm::vec3 lightPos(10.0f, 10.0f, 10.0f);
+glm::vec3 lightPos(0.0f, 10.0f, -20.0f);
 
 using namespace std;
 
 int main() {
-    fInitGL();
+    GLFWwindow* window;
+    fInitGL(window);
 
+    Shader shader("vertex.txt", "fragment.txt");
+    cOcean ocean(128, 0.001f, glm::vec2(32.0f, 32.0f), 64.0f, false);
+    ocean.bind(shader);
 
+    float t = 0.0f;
+    while (!glfwWindowShouldClose(window)) {
+        t += 0.005f;
+        // Set frame time
+        GLfloat currentFrame = glfwGetTime();
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
 
+        // Check and call events
+        glfwPollEvents();
+        Do_Movement();
+        cout << "\r" << 1 / deltaTime << " fps";
 
+        // Clear the colorbuffer
+        glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glm::mat4 projection = glm::perspective(camera.Zoom, (float)screenWidth / (float)screenHeight, 0.1f, 100.0f);
+        glm::mat4 view = camera.GetViewMatrix();
+        glm::mat4 model;
+        model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // Translate it down a bit so it's at the center of the scene
+        model = glm::scale(model, glm::vec3(0.5f));
 
+        ocean.render(t, lightPos, camera.Position, projection, view, model, false);
 
+        glfwSwapBuffers(window);
+    }
+
+    glfwTerminate();
+    return 0;
 }
 
 
-inline void fInitGL() {
+inline void fInitGL(GLFWwindow* &window) {
     // Init GLFW
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -58,7 +89,7 @@ inline void fInitGL() {
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
 
-    GLFWwindow* window = glfwCreateWindow(screenWidth, screenHeight, "Grating", nullptr, nullptr); // Windowed
+    window = glfwCreateWindow(screenWidth, screenHeight, "Grating", nullptr, nullptr); // Windowed
     glfwMakeContextCurrent(window);
 
     // Set the required callback functions
