@@ -1,0 +1,121 @@
+// shadertype=glsl
+
+#version 330
+
+in vec3 normal_vector;
+in vec3 Position;
+out vec4 color;
+
+uniform vec3 cameraPos;
+uniform float length;
+uniform samplerCube skybox;
+
+void main (void) {
+    vec3 I = normalize(Position - cameraPos);
+    vec3 R = reflect(I, normalize(normal_vector));
+    
+    bool X, Y, Z;
+    // Check faces
+    X = R.x > 0 ? true : false;
+    Y = R.y > 0 ? true : false;
+    Z = R.z > 0 ? true : false;
+
+    // Try X
+    float x_speed = R.x, x_ratio;
+    if (X) {
+        x_ratio = (length - Position.x) / x_speed;
+    }
+    else {
+        x_ratio = (length + Position.x) / abs(x_speed);
+    }
+
+    // Try Y
+    float y_speed = R.y, y_ratio;
+    if (Y) {
+        y_ratio = (length - Position.y) / y_speed;
+    }
+    else {
+        y_ratio = (length + Position.y) / abs(y_speed);
+    }
+
+    // Try Z
+    float z_speed = R.z, z_ratio;
+    if (Z) {
+        z_ratio = (length - Position.z) / z_speed;
+    }
+    else {
+        z_ratio = (length + Position.z) / abs(z_speed);
+    }
+
+    float ratio = min(x_ratio, min(y_ratio, z_ratio));
+
+    vec3 final = Position + R * ratio;
+
+    vec4 colorR;
+    if (ratio > 0)
+        colorR = texture(skybox, final);
+    else
+        colorR = vec4(1.0, 0.0, 0.0, 1.0);
+
+    // Calculate refraction
+    float cos_nor_light = dot(I, normalize(normal_vector));
+    float sin_nor_light = sqrt(1 - cos_nor_light * cos_nor_light);
+    float sin_out_light = sin_nor_light / 1.33;
+    float tan_out_light = sin_out_light / sqrt(1 - sin_out_light * sin_out_light);
+    float y_height = cos_nor_light;
+
+    vec3 verti = R - y_height * normal_vector;
+    float xz_origin = length(verti);
+    float xz_length_now = abs(y_height) * tan_out_light;
+    float scale = xz_length_now / xz_origin;
+
+    verti = scale * verti;
+    vec3 F = verti + y_height * normal_vector;
+
+    X = F.x > 0 ? true : false;
+    Y = F.y > 0 ? true : false;
+    Z = F.z > 0 ? true : false;
+
+    // Try X
+    x_speed = F.x, x_ratio;
+    if (X) {
+        x_ratio = (length - Position.x) / x_speed;
+    }
+    else {
+        x_ratio = (length + Position.x) / abs(x_speed);
+    }
+
+    // Try Y
+    y_speed = F.y, y_ratio;
+    if (Y) {
+        y_ratio = (length - Position.y) / y_speed;
+    }
+    else {
+        y_ratio = (length + Position.y) / abs(y_speed);
+    }
+
+    // Try Z
+    z_speed = F.z, z_ratio;
+    if (Z) {
+        z_ratio = (length - Position.z) / z_speed;
+    }
+    else {
+        z_ratio = (length + Position.z) / abs(z_speed);
+    }
+
+    ratio = min(x_ratio, min(y_ratio, z_ratio));
+
+    final = Position + F * ratio;
+    vec4 colorF;
+    if (ratio < 0)
+        colorF = vec4(0.0, 1.0, 0.0, 1.0);
+    else
+        colorF = texture(skybox, final);
+
+    // float blender = (exp(abs(cos_nor_light) - 0.66) - 1) / 0.40494;
+    float blender = (abs(cos_nor_light) - 0.66) / 0.34;
+    if (abs(cos_nor_light) > 0.66)
+        color = blender * colorF + (1 - blender) * colorR;
+    else
+        color = colorR;
+}

@@ -76,7 +76,7 @@ public:
     std::complex<float> hTilde(float t, int n_prime, int m_prime);
     void evaluateWaves(float t);
     void evaluateWavesFFT(float t);
-    void render(float t, glm::vec3 light_pos, glm::vec3 view_pos, glm::mat4 Projection, glm::mat4 View, glm::mat4 Model, bool use_fft);
+    void render(float t, glm::vec3 light_pos, glm::vec3 view_pos, glm::mat4 Projection, glm::mat4 View, glm::mat4 Model, bool use_fft, glm::vec3 camePos, GLuint texture);
     sVertexNormal update(glm::vec2 x, float t);
 
 private:

@@ -1,0 +1,19 @@
+// shadertype=glsl
+
+#version 330
+
+in vec3 vertex;
+in vec3 normal;
+
+uniform mat4 Projection;
+uniform mat4 View;
+uniform mat4 Model;
+
+out vec3 normal_vector;
+out vec3 Position;
+
+void main() {
+    gl_Position = Projection * View * Model * vec4(vertex, 1.0);
+    Position = vec3(Model * vec4(vertex, 1.0f));
+    normal_vector = mat3(transpose(inverse(Model))) * normal;
+}

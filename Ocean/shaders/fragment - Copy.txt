@@ -1,9 +1,12 @@
+// shadertype=glsl
+
 #version 330
 
 in vec3 normal_vector;
 in vec3 light_vector;
 in vec3 halfway_vector;
 in vec2 tex_coord;
+in vec3 Position;
 in float fog_factor;
 uniform sampler2D water;
 out vec4 fragColor;

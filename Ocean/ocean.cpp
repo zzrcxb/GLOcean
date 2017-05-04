@@ -321,18 +321,19 @@ void cOcean::evaluateWavesFFT(float t) {
 }
 
 
-void cOcean::render(float t, glm::vec3 lightPos, glm::vec3 view_pos, glm::mat4 Projection, glm::mat4 View, glm::mat4 Model, bool use_fft) {
+void cOcean::render(float t, glm::vec3 lightPos, glm::vec3 view_pos, glm::mat4 Projection, glm::mat4 View, glm::mat4 Model, bool use_fft, glm::vec3 camePos, GLuint texture) {
 
     evaluateWavesFFT(t);
 
     _load();
 
-    shader.Use();   // Don't forget this one!
-                    // Transformation matrices
-                    // Set up lights
-    GLint lightPosLoc = glGetUniformLocation(shader.Program, "light_position");
-    glUniform3f(lightPosLoc, lightPos.x, lightPos.y, lightPos.z);
+    shader.Use();
 
+    //GLint lightPosLoc = glGetUniformLocation(shader.Program, "light_position");
+    //glUniform3f(lightPosLoc, lightPos.x, lightPos.y, lightPos.z);
+
+    glUniform3f(glGetUniformLocation(shader.Program, "cameraPos"), camePos.x, camePos.y, camePos.z);
+    glUniform1f(glGetUniformLocation(shader.Program, "length"), 1.0);
     // Set up camera
     glUniformMatrix4fv(glGetUniformLocation(shader.Program, "Projection"), 1, GL_FALSE, glm::value_ptr(Projection));
     glUniformMatrix4fv(glGetUniformLocation(shader.Program, "View"), 1, GL_FALSE, glm::value_ptr(View));
@@ -392,7 +393,6 @@ void cOcean::_load() {
         delete[] pieces;
 
     pieces = new GLfloat[size];
-
     for (int i = 0; i < indices.size(); i++) {
         int index = indices[i];
         pieces[i * 6 + 0] = vertices[index].pos.x;

@@ -1,3 +1,10 @@
+//     _   __ _____    
+//    / | / /\___  \   
+//   /  |/ /    /  /   
+//  / /|  /    /  /__  
+// /_/ |_/     \_____\ 
+//                     
+
 
 // GLEW
 #define GLEW_STATIC
@@ -19,6 +26,7 @@
 #include "Shader.h"
 #include "Camera.h"
 #include "ocean.h"
+#include "skybox.h"
 
 
 // Function prototypes
@@ -30,7 +38,7 @@ inline void fInitGL(GLFWwindow* &window);
 
 GLuint screenWidth = 1920, screenHeight = 1080;
 // Camera
-Camera camera(glm::vec3(0.0f, 2.5f, 10.0f));
+Camera camera(glm::vec3(0.0f, 0.003f, 0.0f));
 bool keys[1024];
 GLfloat lastX = 400, lastY = 300;
 bool firstMouse = true;
@@ -45,13 +53,23 @@ int main() {
     GLFWwindow* window;
     fInitGL(window);
 
-    Shader shader("vertex.txt", "fragment.txt");
-    cOcean ocean(128, 0.001f, glm::vec2(32.0f, 32.0f), 64.0f, false);
+    vector<const GLchar*> faces;
+    faces.push_back("skybox/right.jpg");
+    faces.push_back("skybox/left.jpg");
+    faces.push_back("skybox/top.jpg");
+    faces.push_back("skybox/bottom.jpg");
+    faces.push_back("skybox/back.jpg");
+    faces.push_back("skybox/front.jpg");
+    Shader skyshaders("shaders/skybox.vs", "shaders/skybox.frag");
+    SkyBox sbox(faces, skyshaders);
+
+    Shader shader("shaders/vertex.txt", "shaders/fragment.txt");
+    cOcean ocean(128, 0.00005f, glm::vec2(32.0f, 32.0f), 2.0f, false);
     ocean.bind(shader);
 
     float t = 0.0f;
     while (!glfwWindowShouldClose(window)) {
-        t += 0.005f;
+        t += 0.003f;
         // Set frame time
         GLfloat currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
@@ -65,13 +83,20 @@ int main() {
         // Clear the colorbuffer
         glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glm::mat4 projection = glm::perspective(camera.Zoom, (float)screenWidth / (float)screenHeight, 0.1f, 100.0f);
-        glm::mat4 view = camera.GetViewMatrix();
-        glm::mat4 model;
-        model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // Translate it down a bit so it's at the center of the scene
-        model = glm::scale(model, glm::vec3(0.5f));
+        glm::mat4 projection = glm::perspective(camera.Zoom, (float)screenWidth / (float)screenHeight, 0.001f, 100.0f);
 
-        ocean.render(t, lightPos, camera.Position, projection, view, model, false);
+        glm::mat4 model;
+        model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
+        model = glm::scale(model, glm::vec3(1.0f));
+        glm::mat4 view = glm::mat4(glm::mat3(camera.GetViewMatrix()));
+        glm::mat3 tmp1 = glm::mat3(camera.GetViewMatrix());
+        glm::mat4 tmp2 = camera.GetViewMatrix();
+        sbox.draw(tmp2, projection, model);
+
+        view = camera.GetViewMatrix();
+        model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
+        //model = glm::scale(model, glm::vec3(0.2f));
+        ocean.render(t, lightPos, camera.Position, projection, view, model, false, camera.Position, sbox.getTexture());
 
         glfwSwapBuffers(window);
     }
@@ -109,6 +134,7 @@ inline void fInitGL(GLFWwindow* &window) {
 
     // Setup some OpenGL options
     glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
 }
 
 

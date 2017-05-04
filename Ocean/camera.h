@@ -21,7 +21,7 @@ enum Camera_Movement {
 // Default camera values
 const GLfloat YAW        = -90.0f;
 const GLfloat PITCH      =  0.0f;
-const GLfloat SPEED      =  3.0f;
+const GLfloat SPEED      =  1.0f;
 const GLfloat SENSITIVTY =  0.25f;
 const GLfloat ZOOM       =  45.0f;
 
@@ -42,15 +42,18 @@ public:
     GLfloat MovementSpeed;
     GLfloat MouseSensitivity;
     GLfloat Zoom;
+    GLfloat y0;
 
     // Constructor with vectors
     Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), GLfloat yaw = YAW, GLfloat pitch = PITCH) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVTY), Zoom(ZOOM) {
         this->Position = position;
+        this->y0 = Position.y;
         this->WorldUp = up;
         this->Yaw = yaw;
         this->Pitch = pitch;
         this->updateCameraVectors();
     }
+
     // Constructor with scalar values
     Camera(GLfloat posX, GLfloat posY, GLfloat posZ, GLfloat upX, GLfloat upY, GLfloat upZ, GLfloat yaw, GLfloat pitch) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVTY), Zoom(ZOOM) {
         this->Position = glm::vec3(posX, posY, posZ);
@@ -76,6 +79,8 @@ public:
             this->Position -= this->Right * velocity;
         if (direction == RIGHT)
             this->Position += this->Right * velocity;
+
+        //this->Position.y = y0;
     }
 
     // Processes input received from a mouse input system. Expects the offset value in both the x and y direction.
