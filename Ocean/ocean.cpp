@@ -334,6 +334,7 @@ void cOcean::render(float t, glm::vec3 lightPos, glm::vec3 view_pos, glm::mat4 P
 
     glUniform3f(glGetUniformLocation(shader.Program, "cameraPos"), camePos.x, camePos.y, camePos.z);
     glUniform1f(glGetUniformLocation(shader.Program, "length"), 1.0);
+
     // Set up camera
     glUniformMatrix4fv(glGetUniformLocation(shader.Program, "Projection"), 1, GL_FALSE, glm::value_ptr(Projection));
     glUniformMatrix4fv(glGetUniformLocation(shader.Program, "View"), 1, GL_FALSE, glm::value_ptr(View));

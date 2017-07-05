@@ -38,7 +38,7 @@ inline void fInitGL(GLFWwindow* &window);
 
 GLuint screenWidth = 1920, screenHeight = 1080;
 // Camera
-Camera camera(glm::vec3(0.0f, 0.003f, 0.0f));
+Camera camera(glm::vec3(0.0f, 0.01f, 0.0f));
 bool keys[1024];
 GLfloat lastX = 400, lastY = 300;
 bool firstMouse = true;
@@ -64,7 +64,7 @@ int main() {
     SkyBox sbox(faces, skyshaders);
 
     Shader shader("shaders/vertex.txt", "shaders/fragment.txt");
-    cOcean ocean(128, 0.00005f, glm::vec2(32.0f, 32.0f), 2.0f, false);
+    cOcean ocean(128, 0.0005f, glm::vec2(32.0f, 32.0f), 2.0f, false);
     ocean.bind(shader);
 
     float t = 0.0f;
@@ -95,7 +95,6 @@ int main() {
 
         view = camera.GetViewMatrix();
         model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
-        //model = glm::scale(model, glm::vec3(0.2f));
         ocean.render(t, lightPos, camera.Position, projection, view, model, false, camera.Position, sbox.getTexture());
 
         glfwSwapBuffers(window);

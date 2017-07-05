@@ -1,0 +1,18 @@
+// shadertype=glsl
+
+#version 330
+
+in vec3 normal_vector;
+in vec3 Position;
+out vec4 color;
+
+uniform vec3 cameraPos;
+uniform float length;
+uniform samplerCube skybox;
+
+void main (void) {
+    vec3 I = normalize(Position - cameraPos);
+    vec3 R = reflect(I, normalize(normal_vector));
+    
+    color = texture(skybox, R);
+}
